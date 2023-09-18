@@ -78,6 +78,9 @@ private slots:
     void OnGame();
     void OnAnimation();
     void GamePlayFunction();
+    void configure();
+    void setCamera(space_object &obj, double zoom_scale);
+    void addSpaceObject(space_object o1);
 
 protected:
     bool event(QEvent *event) override;
@@ -94,9 +97,12 @@ private:
 
     QPoint Camera;
     QPoint MouseBuffer;
-    int zoom = 1.0;
+    double zoom = 1.0;
+
+    bool bDebug = false;
 
     int ids = 0;
+    int speed = 1;
     int generateID()    { ids++; return ids; }
 
     QVector<space_object> objects;

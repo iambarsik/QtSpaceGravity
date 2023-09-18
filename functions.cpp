@@ -12,22 +12,8 @@ void Widget::SetStartValues()   {
     Camera.setY(0);
     bMousePressed = false;
 
-
-    space_object sun(generateID(), Qt::yellow, 50, 1000, Resolution.x()/2, Resolution.y()/2, 0.0, 0.0, false);
-    space_object earth(generateID(), Qt::cyan, 10,  100, Resolution.x()*0.5, Resolution.y()*0.3, 3.0, 0.0, false);
-    space_object moon(generateID(), Qt::gray,   5,   10, Resolution.x()*0.5, Resolution.y()*0.25, 2.9, 0.0, false);
-    space_object uranus(generateID(), Qt::darkCyan, 15,  200, Resolution.x()*0.5, Resolution.y()*0.8, -3.5, 0.0, false);
-    objects.push_back(sun);
-    objects.push_back(earth);
-    objects.push_back(moon);
-    objects.push_back(uranus);
-
-    int count = 200;
-    for(int i = 0; i < count; i++) {
-        space_object point(generateID(), Qt::white,   1,   5, (Resolution.x()*0.5 - (count*3)/2) + 3*i, Resolution.y()*0.25, 2.5, 1.0, true);
-        objects.push_back(point);
-    }
-
+        // adding all objects of space system
+    configure();
 }
 
 bool Widget::event(QEvent *event)   {
@@ -43,31 +29,6 @@ bool Widget::event(QEvent *event)   {
         default: return QWidget::event(event);
     }
     return true;
-}
-
-void Widget::mousePressEvent(QMouseEvent *event)    {
-    MouseBuffer = QCursor::pos();
-    bMousePressed = true;
-    Q_UNUSED(event);
-}
-
-void Widget::mouseReleaseEvent(QMouseEvent *event)
-{
-    bMousePressed = false;
-    Q_UNUSED(event);
-}
-
-void Widget::mouseMoveEvent(QMouseEvent *event)
-{
-    if(bMousePressed)   {
-        QPoint current = QCursor::pos();
-        int x = current.x();
-        int y = current.y();
-        Camera.setX(Camera.x() + (x - MouseBuffer.x()));
-        Camera.setY(Camera.y() + (y - MouseBuffer.y()));
-        MouseBuffer = current;
-    }
-    Q_UNUSED(event);
 }
 
 void Widget::OnKeys(int Key, bool press)    {
@@ -90,7 +51,9 @@ void Widget::OnKeys(int Key, bool press)    {
             myKey[BUTTON_LEFT] = press;
         } break;
         case Qt::Key_Space: {
-
+            if(press) {
+                bDebug = !bDebug;
+            }
         } break;
         case Qt::Key_Return:
         case Qt::Key_J: {
@@ -107,9 +70,15 @@ void Widget::OnKeys(int Key, bool press)    {
         } break;
         case Qt::Key_Q: {
             myKey[BUTTON_ACT5] = press;
+            if(press)   {
+                if(speed > 0) speed--;
+            }
         } break;
         case Qt::Key_E: {
             myKey[BUTTON_ACT6] = press;
+            if(press)   {
+                speed++;
+            }
         } break;
         case Qt::Key_H: {
             myKey[BUTTON_ACT7] = press;
@@ -230,29 +199,63 @@ void Widget::OnDrawText(int x, int y, int size, QString text_eng, QString text_r
 }
 
 void Widget::setColor(QColor brush, QColor pen, Qt::BrushStyle style, QPainter *qScr) {
+
     qScr->setBrush(QBrush(brush, style));
     qScr->setPen(QPen(pen));
 }
 
 void Widget::keyPressEvent(QKeyEvent *event)    {
+
     if(!event->isAutoRepeat())
         OnKeys(event->key(),true);
     QWidget::keyPressEvent(event);
 }
 
 void Widget::keyReleaseEvent(QKeyEvent *event)  {
+
     if(!event->isAutoRepeat())
         OnKeys(event->key(),false);
     QWidget::keyReleaseEvent(event);
 }
 
-void Widget::wheelEvent(QWheelEvent *event)
-{
-    /*
-    if(event->angleDelta().y() > 0)
-        zoom += 0.1;
-    else
-        zoom -= 0.1;
-        */
+void Widget::mousePressEvent(QMouseEvent *event)    {
 
+    MouseBuffer = QCursor::pos();
+    bMousePressed = true;
+    Q_UNUSED(event);
+}
+
+void Widget::mouseReleaseEvent(QMouseEvent *event)  {
+
+    bMousePressed = false;
+    Q_UNUSED(event);
+}
+
+void Widget::mouseMoveEvent(QMouseEvent *event) {
+
+    if(bMousePressed)   {
+        QPoint current = QCursor::pos();
+        int x = current.x();
+        int y = current.y();
+        Camera.setX(Camera.x() + (x - MouseBuffer.x()));
+        Camera.setY(Camera.y() + (y - MouseBuffer.y()));
+        MouseBuffer = current;
+    }
+    Q_UNUSED(event);
+}
+
+void Widget::wheelEvent(QWheelEvent *event) {
+
+    if(event->angleDelta().y() > 0) {
+        if(zoom < 10.0) zoom += 0.02;
+    } else {
+        if(zoom > 0.02) zoom -= 0.02;
+    }
+}
+
+void Widget::setCamera(space_object &obj, double zoom_scale)    {
+
+    zoom = zoom_scale;
+    Camera.setX(-obj.x() + Resolution.x()/2*(1.0 - zoom));
+    Camera.setY(-obj.y() + Resolution.y()/2*(1.0 - zoom));
 }

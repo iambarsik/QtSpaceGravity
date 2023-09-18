@@ -9,7 +9,7 @@ class space_object
 {
 
 public:
-    space_object(int id, QColor color, int size, int mass, double x, double y, double Vx, double Vy, bool trash);
+    space_object(int id, QColor color, int size, int mass, double x, double y, double Vx, double Vy, bool trash, QString title);
 
     int id() { return m_id; }
 
@@ -27,19 +27,21 @@ public:
     QColor color() { return m_color; }
     void setColor(QColor color) { m_color = color; }
 
-    int size() { return m_size; }
-    void setSize(int size)  { m_size = size; }
-    int mass() { return m_mass; }
+    double size() { return m_size; }
+    void setSize(double size)  { m_size = size; }
+    double mass() { return m_mass; }
 
     bool isTrash() { return m_trash; }
 
+    void collapse() { b_collapsed = true; }
+    bool isCollapsed() { return b_collapsed; }
 
-
-
+    QString title() { return m_title; }
 
     void draw(QPoint camera, QPainter *p);
     void update();
     void gravity(space_object &obj);
+    void collide(space_object &obj);
 
 private:
     int m_id;
@@ -48,12 +50,15 @@ private:
     double m_vx;
     double m_vy;
     QColor m_color;
-    int m_size;
-    int m_mass;
+    double m_size;
+    double m_mass;
 
     bool m_trash;
+    bool b_collapsed = false;
+    QString m_title;
 
-
+signals:
+    void signalCollided(space_object &o1, space_object &o2);
 
 };
 

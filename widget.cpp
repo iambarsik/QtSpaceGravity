@@ -37,7 +37,7 @@ Widget::Widget(QWidget *parent)
     GameField = QRect(0,0,SCREEN_TILE_WIDTH*TILE_SIZE,SCREEN_TILE_HEIGHT*TILE_SIZE);
 
     #ifdef Q_OS_WINDOWS
-        this->setWindowFlags(Qt::FramelessWindowHint);
+        //this->setWindowFlags(Qt::FramelessWindowHint);
     #endif
 
     Resolution.setX(GameField.width());
@@ -113,7 +113,6 @@ Widget::Widget(QWidget *parent)
         myKey[i] = false;
     }
 
-
     SetStartValues();
 
     iForGame = 0;
@@ -146,45 +145,63 @@ void Widget::GamePlayFunction() {
     }
 }
 
+void Widget::addSpaceObject(space_object o1)   {
+    objects.push_back(o1);
+}
+
 void Widget::paintEvent(QPaintEvent *event) {
 
         // init buffer image
     QImage img(Resolution.x(),Resolution.y(),QImage::Format_RGB32);
     QPainter qScreen;
     qScreen.begin(&img);
-    qScreen.setRenderHint(QPainter::Antialiasing,false);
+    qScreen.setRenderHint(QPainter::Antialiasing,true);
 
     setColor(Qt::black,Qt::black, Qt::SolidPattern, &qScreen);
     qScreen.drawRect(0,0,Resolution.x(),Resolution.y());
 
         // ====================================== start user drawing ===============================
+
         // before zooming
 
-    // draw something
+        // draw something
 
-        // zooming
-    qScreen.save();
-    qScreen.scale(zoom,zoom);
-
-    // draw something
     setColor(Qt::white,Qt::white, Qt::NoBrush, &qScreen);
     qScreen.drawRect(0,0,Resolution.x() - 1,Resolution.y() - 1);
 
-    //OnDrawText(Resolution.x()/4, TILE_SIZE,FONT_SIZE_MEDIUM,"Hello world!", "Здравствуй, Мир!", &qScreen);
-    for(int o = 0; o < objects.size(); o++)    {
-        objects[o].draw(Camera,&qScreen);
-    }
-
-
-    bool bDebug = false;
-
     if(bDebug)  {
+
+        //OnDrawText(50, 15, FONT_SIZE_SMALL,QString("Objects = %1").arg(objects.size()),
+        //                                     QString("Objects = %1").arg(objects.size()),&qScreen);
+        OnDrawText(50, 15, FONT_SIZE_MICRO,QString("Speed = %1").arg(speed),
+                                             QString("Скорость = %1").arg(speed),&qScreen);
+
+        /*
         for(int o = 0; o < objects.size(); o++)    {
             OnDrawText(50, 15*o, FONT_SIZE_SMALL,QString("x = %1, y = %2").arg(objects[o].x()).arg(objects[o].y()),
                                                  QString("x = %1, y = %2").arg(objects[o].x()).arg(objects[o].y()),&qScreen);
         }
+        */
     }
 
+        // zooming
+    qScreen.save();
+    qScreen.translate(Resolution.x()/2*(1.0 - zoom), Resolution.y()/2*(1.0 - zoom));
+    qScreen.scale(zoom,zoom);
+
+        // draw something
+
+    //OnDrawText(Resolution.x()/4, TILE_SIZE,FONT_SIZE_MEDIUM,"Hello world!", "Здравствуй, Мир!", &qScreen);
+    for(int o = 0; o < objects.size(); o++)    {
+        objects[o].draw(Camera,&qScreen);
+
+        if(bDebug)  {
+            OnDrawText(Camera.x() + objects[o].x(), Camera.y() + objects[o].y() + objects[o].size()/2 + 5,
+                       FONT_SIZE_LARGE,
+                       objects[o].title(),
+                       objects[o].title(),&qScreen);
+        }
+    }
 
         // after zooming
     qScreen.restore();
@@ -192,11 +209,7 @@ void Widget::paintEvent(QPaintEvent *event) {
 
     // draw something
 
-
-
-
         // ====================================== end user drawing =================================
-
 
         // Рисуем сенсорные кнопки, если экран перевёрнут
     if(bRotateScreen)   {
@@ -215,7 +228,7 @@ void Widget::paintEvent(QPaintEvent *event) {
         // transposing buffer image to main widget
     QPainter p;
     p.begin(this);
-    p.setRenderHint(QPainter::Antialiasing,false);
+    p.setRenderHint(QPainter::Antialiasing,true);
     setColor(Qt::black,Qt::black, Qt::SolidPattern, &p);
     p.drawRect(0,0,this->width(),this->height());
     if(bRotateScreen == false)   {
